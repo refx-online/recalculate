@@ -1,0 +1,34 @@
+[package]
+name = "recalculate"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "recalc"
+path = "src/main.rs"
+
+[dependencies]
+md5 = "0.8"
+dotenv = "0.15"
+tokio = { version = "1.0", features = ["full"] }
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "mysql", "postgres", "sqlite", "json", "time"] }
+redis = { version = "0.24", features = ["tokio-comp", "json"] }
+
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+clap = { version = "4.0", features = ["derive"] }
+anyhow = "1.0"
+
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+futures = "0.3"
+path-absolutize = "3.0"
+reqwest = { version = "0.11", features = ["json"] }
+
+refx-pp = { git = "https://github.com/refx-online/refx-pp-rs", rev = "834b22b0c4d03ebae6b142844ecdf74b3b277a43", features = ["sync"] }
+rosu-mods = { version = "0.3.0", default-features = false, features = ["serde"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
