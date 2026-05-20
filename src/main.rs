@@ -339,6 +339,32 @@ async fn recalculate_mode_users(mode: GameMode, ctx: &Context) -> Result<()> {
     Ok(())
 }
 
+async fn recalculate_score_statuses(mode: GameMode, ctx: &Context) -> Result<()> {
+    // For each (userid, map_md5) group, set the best score (highest pp, tiebreak by score) to
+    // status=2, rest to status=1
+    sqlx::query(
+        r#"
+        UPDATE scores s
+        INNER JOIN (
+            SELECT userid, map_md5,
+                   SUBSTRING_INDEX(GROUP_CONCAT(id ORDER BY pp DESC, score DESC), ',', 1) AS best_id
+            FROM scores
+            WHERE mode = ? AND status IN (1, 2)
+            GROUP BY userid, map_md5
+        ) best ON s.userid = best.userid AND s.map_md5 = best.map_md5
+        SET s.status = CASE WHEN s.id = best.best_id THEN 2 ELSE 1 END
+        WHERE s.mode = ? AND s.status IN (1, 2)
+        "#
+    )
+        .bind(mode as u8)
+        .bind(mode as u8)
+        .execute(&ctx.database)
+        .await?;
+
+    info!("Updated score statuses for mode {:?}", mode);
+    Ok(())
+}
+
 async fn recalculate_mode_scores(mode: GameMode, ctx: &Context) -> Result<()> {
     // we dont talk about lazer check
     let scores: Vec<Score> = sqlx::query_as(
@@ -357,7 +383,7 @@ async fn recalculate_mode_scores(mode: GameMode, ctx: &Context) -> Result<()> {
         FROM scores
         INNER JOIN maps ON scores.map_md5 = maps.md5
         LEFT JOIN lazer_scores ON lazer_scores.score_id = scores.id
-        WHERE scores.status = 2
+        WHERE scores.status IN (1, 2)
           AND scores.mode = ?
         ORDER BY scores.pp DESC
         "#
@@ -371,6 +397,8 @@ async fn recalculate_mode_scores(mode: GameMode, ctx: &Context) -> Result<()> {
     for chunk in chunks {
         process_score_chunk(&chunk, ctx).await?;
     }
+
+    recalculate_score_statuses(mode, ctx).await?;
 
     Ok(())
 }
