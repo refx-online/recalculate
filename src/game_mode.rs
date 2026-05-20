@@ -36,6 +36,7 @@ pub enum GameMode {
 
     OsuCheat = 12,
     OsuCheatCheat = 16,
+    TD = 20,
 }
 
 const RELAX: u32 = 1 << 7;
@@ -43,7 +44,7 @@ const RELAX: u32 = 1 << 7;
 impl GameMode {
     pub const fn base_mode(self) -> Self {
         match self {
-            Self::Osu | Self::OsuRx | Self::OsuAp | Self::OsuCheat | Self::OsuCheatCheat => Self::Osu,
+            Self::Osu | Self::OsuRx | Self::OsuAp | Self::OsuCheat | Self::OsuCheatCheat | Self::TD => Self::Osu,
             Self::Taiko | Self::TaikoRx => Self::Taiko,
             Self::Catch | Self::CatchRx => Self::Catch,
             Self::Mania => Self::Mania,
@@ -58,7 +59,8 @@ impl GameMode {
             Self::CatchRx |
 
             // NOTE: streams too easy, nerf stream 
-            Self::OsuCheat
+            Self::OsuCheat |
+            Self::OsuCheatCheat
         )
     }
 
@@ -102,7 +104,7 @@ impl TryFrom<u8> for GameMode {
 
             12 => Ok(Self::OsuCheat),
             16 => Ok(Self::OsuCheatCheat),
-
+            20 => Ok(Self::TD),
             _ => Err(InvalidGameModeError(value)),
         }
     }

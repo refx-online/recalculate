@@ -48,7 +48,7 @@ pub struct Args {
         short, 
         long, 
         value_delimiter = ',',
-        default_values = ["0", "1", "2", "3", "4", "5", "6", "8", "12", "16"]
+        default_values = ["0", "1", "2", "3", "4", "5", "6", "8", "12", "16", "20"]
     )]
     mode: Vec<u8>,
 }
@@ -79,6 +79,7 @@ struct Score {
 
     mods_json: Option<sqlx::types::Json<serde_json::Value>>,
     lazer: bool,
+    clock_rate: Option<f64>,
 }
 
 #[derive(Debug, sqlx::FromRow)]
@@ -161,6 +162,12 @@ async fn recalculate_score(
             Err(e) => {
                 warn!("Failed to parse mods '{}' for score {}: {}", mods_str, score.id, e);
             }
+        }
+    }
+
+    if let Some(clock_rate) = score.clock_rate {
+        if clock_rate != -1.0 {
+            calculator = calculator.clock_rate(clock_rate);
         }
     }
 
@@ -340,7 +347,7 @@ async fn recalculate_mode_scores(mode: GameMode, ctx: &Context) -> Result<()> {
             scores.score, scores.id, scores.mode, scores.mods, scores.map_md5,
             scores.pp, scores.acc, scores.max_combo,
             scores.ngeki, scores.n300, scores.nkatu, scores.n100, scores.n50, scores.nmiss,
-            scores.userid,
+            scores.userid, scores.clock_rate, 
             maps.id AS map_id,
             lazer_scores.mods_json,
             CASE 
