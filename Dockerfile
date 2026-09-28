@@ -1,5 +1,7 @@
 FROM rust:1.88-bookworm AS chef
-RUN cargo install cargo-chef
+# NOTE (local setup): unpinned cargo-chef now requires rustc 1.91+.
+# Pin to 0.1.71 which builds on the repo's pinned rust 1.88 toolchain.
+RUN cargo install cargo-chef --version 0.1.71
 WORKDIR /build
 
 FROM chef AS planner
