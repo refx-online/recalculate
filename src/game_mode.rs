@@ -71,7 +71,12 @@ impl GameMode {
             Self::Catch => RefxGameMode::Catch,
             Self::Mania => RefxGameMode::Mania,
 
-            _ => unimplemented!(),
+            // NOTE: base_mode() only ever returns the four base modes, so
+            // this is unreachable. unreachable! (not unimplemented!) so a
+            // future base_mode() change fails loudly here instead of
+            // silently doing the wrong thing somewhere downstream.
+            // (bare form: formatted messages aren't allowed in const fn.)
+            _ => unreachable!(),
         }
     }
 
@@ -82,7 +87,8 @@ impl GameMode {
             Self::Catch => RosuGameMode::Catch,
             Self::Mania => RosuGameMode::Mania,
 
-            _ => unimplemented!(),
+            // NOTE: see above.
+            _ => unreachable!(),
         }
     }
 }

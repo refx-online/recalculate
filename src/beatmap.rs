@@ -113,8 +113,12 @@ async fn api_get_osu_file(beatmap_id: i32) -> Result<Vec<u8>> {
         .timeout(Duration::from_secs(30))
         .build()?;
         
-    let api_url = std::env::var("BEATMAPS_SERVICE_URL")
-        .unwrap_or_else(|_| "balls".to_string());
+    let api_url = std::env::var("BEATMAPS_SERVICE_URL").unwrap_or_default();
+    // NOTE: fail fast with a clear message instead of requesting some
+    // garbage default url and retrying that.
+    if api_url.trim().is_empty() {
+        return Err(anyhow::anyhow!("BEATMAPS_SERVICE_URL is not set"));
+    }
     let url = format!("{}/v1/get-osu/{}", api_url, beatmap_id);
     
     let response = client.get(&url).send().await?;
