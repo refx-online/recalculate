@@ -297,7 +297,71 @@ async fn recalculate_user(
         ).await?;
     }
 
+    // snapshot history for graphs + peak rank (same rule as forlorn:
+    // first capture, stale, pp best, or rank best). non-fatal: a history
+    // hiccup shouldn't fail the whole recalc.
+    if let Err(e) = capture_history(ctx, user_id, game_mode as u8, pp as i32, &user_info.country).await {
+        warn!("history capture failed for user ID {}: {}", user_id, e);
+    }
+
     debug!("Recalculated user ID {} ({:.3}pp, {:.3}%)", user_id, pp, acc);
+
+    Ok(())
+}
+
+async fn capture_history(
+    ctx: &Context,
+    user_id: i32,
+    mode: u8,
+    pp: i32,
+    country: &str,
+) -> Result<()> {
+    let mut redis_conn = ctx.redis.get_async_connection().await?;
+
+    let rank: Option<usize> = redis_conn
+        .zrevrank(format!("bancho:leaderboard:{mode}"), user_id)
+        .await
+        .unwrap_or(None);
+    let country_rank: Option<usize> = redis_conn
+        .zrevrank(
+            format!("bancho:leaderboard:{mode}:{}", country.to_lowercase()),
+            user_id,
+        )
+        .await
+        .unwrap_or(None);
+
+    let (max_pp, min_rank, fresh): (i64, i64, i8) = sqlx::query_as(
+        "SELECT COALESCE(MAX(pp), -1),
+                COALESCE(MIN(CASE WHEN `rank` > 0 THEN `rank` END), 2147483647),
+                COALESCE(MAX(captured_at > NOW() - INTERVAL 1 DAY), 0)
+         FROM user_profile_history
+         WHERE user_id = ? AND mode = ?",
+    )
+    .bind(user_id)
+    .bind(mode)
+    .fetch_one(&ctx.database)
+    .await?;
+
+    let rank = rank.map(|r| r as i32 + 1).unwrap_or(0);
+    let country_rank = country_rank.map(|r| r as i32 + 1).unwrap_or(0);
+
+    let worth_it =
+        fresh == 0 || pp as i64 > max_pp || (rank > 0 && (rank as i64) < min_rank);
+    if !worth_it {
+        return Ok(());
+    }
+
+    sqlx::query(
+        "INSERT INTO user_profile_history (user_id, mode, pp, `rank`, country_rank)
+         VALUES (?, ?, ?, ?, ?)",
+    )
+    .bind(user_id)
+    .bind(mode)
+    .bind(pp)
+    .bind(rank)
+    .bind(country_rank)
+    .execute(&ctx.database)
+    .await?;
 
     Ok(())
 }
