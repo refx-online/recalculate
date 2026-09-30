@@ -35,8 +35,15 @@ pub enum GameMode {
     OsuAp = 8,
 
     OsuCheat = 12,
-    OsuCheatCheat = 16,
-    TD = 20,
+    TaikoCheat = 13,
+    CatchCheat = 14,
+    ManiaCheat = 15,
+
+    OsuCheatRx = 21,
+    TaikoCheatRx = 22,
+    CatchCheatRx = 23,
+
+    OsuCheatAp = 24,
 }
 
 const RELAX: u32 = 1 << 7;
@@ -44,10 +51,10 @@ const RELAX: u32 = 1 << 7;
 impl GameMode {
     pub const fn base_mode(self) -> Self {
         match self {
-            Self::Osu | Self::OsuRx | Self::OsuAp | Self::OsuCheat | Self::OsuCheatCheat | Self::TD => Self::Osu,
-            Self::Taiko | Self::TaikoRx => Self::Taiko,
-            Self::Catch | Self::CatchRx => Self::Catch,
-            Self::Mania => Self::Mania,
+            Self::Osu | Self::OsuRx | Self::OsuAp | Self::OsuCheat | Self::OsuCheatRx | Self::OsuCheatAp => Self::Osu,
+            Self::Taiko | Self::TaikoRx | Self::TaikoCheat | Self::TaikoCheatRx => Self::Taiko,
+            Self::Catch | Self::CatchRx | Self::CatchCheat | Self::CatchCheatRx => Self::Catch,
+            Self::Mania | Self::ManiaCheat => Self::Mania,
         }
     }
 
@@ -60,7 +67,13 @@ impl GameMode {
 
             // NOTE: streams too easy, nerf stream 
             Self::OsuCheat |
-            Self::OsuCheatCheat
+            Self::TaikoCheat |
+            Self::CatchCheat |
+            Self::ManiaCheat |
+            Self::OsuCheatRx |
+            Self::TaikoCheatRx |
+            Self::CatchCheatRx |
+            Self::OsuCheatAp
         )
     }
 
@@ -109,8 +122,13 @@ impl TryFrom<u8> for GameMode {
             8 => Ok(Self::OsuAp),
 
             12 => Ok(Self::OsuCheat),
-            16 => Ok(Self::OsuCheatCheat),
-            20 => Ok(Self::TD),
+            13 => Ok(Self::TaikoCheat),
+            14 => Ok(Self::CatchCheat),
+            15 => Ok(Self::ManiaCheat),
+            21 => Ok(Self::OsuCheatRx),
+            22 => Ok(Self::TaikoCheatRx),
+            23 => Ok(Self::CatchCheatRx),
+            24 => Ok(Self::OsuCheatAp),
             _ => Err(InvalidGameModeError(value)),
         }
     }
