@@ -32,18 +32,18 @@ pub enum GameMode {
     TaikoRx = 5,
     CatchRx = 6,
 
-    OsuAp = 8,
+    OsuAp = 7,
 
-    OsuCheat = 12,
-    TaikoCheat = 13,
-    CatchCheat = 14,
-    ManiaCheat = 15,
+    OsuCheat = 8,
+    TaikoCheat = 9,
+    CatchCheat = 10,
+    ManiaCheat = 11,
 
-    OsuCheatRx = 21,
-    TaikoCheatRx = 22,
-    CatchCheatRx = 23,
+    OsuCheatRx = 12,
+    TaikoCheatRx = 13,
+    CatchCheatRx = 14,
 
-    OsuCheatAp = 24,
+    OsuCheatAp = 15,
 }
 
 const RELAX: u32 = 1 << 7;
@@ -119,16 +119,16 @@ impl TryFrom<u8> for GameMode {
             4 => Ok(Self::OsuRx),
             5 => Ok(Self::TaikoRx),
             6 => Ok(Self::CatchRx),
-            8 => Ok(Self::OsuAp),
+            7 => Ok(Self::OsuAp),
 
-            12 => Ok(Self::OsuCheat),
-            13 => Ok(Self::TaikoCheat),
-            14 => Ok(Self::CatchCheat),
-            15 => Ok(Self::ManiaCheat),
-            21 => Ok(Self::OsuCheatRx),
-            22 => Ok(Self::TaikoCheatRx),
-            23 => Ok(Self::CatchCheatRx),
-            24 => Ok(Self::OsuCheatAp),
+            8 => Ok(Self::OsuCheat),
+            9 => Ok(Self::TaikoCheat),
+            10 => Ok(Self::CatchCheat),
+            11 => Ok(Self::ManiaCheat),
+            12 => Ok(Self::OsuCheatRx),
+            13 => Ok(Self::TaikoCheatRx),
+            14 => Ok(Self::CatchCheatRx),
+            15 => Ok(Self::OsuCheatAp),
             _ => Err(InvalidGameModeError(value)),
         }
     }
